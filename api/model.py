@@ -1,5 +1,7 @@
-from sqlalchemy import Column, Integer, String, Date, Text
+from sqlalchemy import Column, Integer, String, Date, Text, DateTime, Enum
 from .database import Base
+from datetime import datetime
+import enum
 
 class Participante(Base):
     __tablename__ = "participantes"
@@ -25,3 +27,15 @@ class Participante(Base):
 
     autorizacao_lgpd = Column(Text, nullable=False)  # sim ou justificativa
 
+class TipoPublicacao(str, enum.Enum):
+    blog = "blog"
+    noticia = "noticia"
+
+class Publicacao(Base):
+    __tablename__ = "publicacoes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    legenda = Column(String, nullable=False)
+    imagem_url = Column(String, nullable=False)
+    tipo = Column(Enum(TipoPublicacao), nullable=False)
+    data_publicacao = Column(DateTime, default=datetime.utcnow)

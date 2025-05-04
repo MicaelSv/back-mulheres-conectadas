@@ -1,6 +1,7 @@
-from pydantic import BaseModel, EmailStr, AnyUrl
-from datetime import date
+from pydantic import BaseModel, EmailStr, AnyUrl, HttpUrl
+from datetime import date, datetime
 from typing import Optional
+from enum import Enum
 
 class ParticipanteBase(BaseModel):
     nome: str
@@ -22,6 +23,22 @@ class ParticipanteCreate(ParticipanteBase):
 
 class ParticipanteResponse(ParticipanteBase):
     id: int
+
+    class Config:
+        from_attributes = True
+
+class TipoPublicacao(str, Enum):
+    blog = "blog"
+    noticia = "noticia"
+
+class PublicacaoCreate(BaseModel):
+    legenda: str
+    imagem_url: HttpUrl  # ou str, caso aceite qualquer texto
+    tipo: TipoPublicacao
+
+class PublicacaoResponse(PublicacaoCreate):
+    id: int
+    data_publicacao: datetime
 
     class Config:
         from_attributes = True

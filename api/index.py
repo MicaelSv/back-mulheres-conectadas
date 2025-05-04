@@ -26,3 +26,11 @@ def criar_participante(participante: schema.ParticipanteCreate, db: Session = De
 @app.get("/users", response_model=list[schema.ParticipanteResponse])
 def listar_participantes(db: Session = Depends(get_db)):
     return db.query(model.Participante).all()
+
+@app.post("/publicar", response_model=schema.PublicacaoResponse)
+def criar_publicacao(publicacao: schema.PublicacaoCreate, db: Session = Depends(get_db)):
+    db_publicacao = model.Publicacao(**publicacao.dict())
+    db.add(db_publicacao)
+    db.commit()
+    db.refresh(db_publicacao)
+    return db_publicacao
