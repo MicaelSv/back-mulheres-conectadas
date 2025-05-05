@@ -1,7 +1,16 @@
 from sqlalchemy import Column, Integer, String, Date, Text, DateTime, Enum
 from api.database import Base
 from datetime import datetime
-import enum
+
+from enums import (
+    GeneroEnum,
+    EtniaEnum,
+    EscolaridadeEnum,
+    SituacaoMercadoEnum,
+    PresencialEnum,
+    FonteProgramaEnum,
+    TipoPublicacao,
+)
 
 class Participante(Base):
     __tablename__ = "participantes"
@@ -11,25 +20,22 @@ class Participante(Base):
     nome = Column(String(255), nullable=False)
     email = Column(String(255), nullable=False, unique=True)
     data_nascimento = Column(Date, nullable=False)
-    genero = Column(String(100), nullable=False)
-    etnia = Column(String(100), nullable=False)
-    escolaridade = Column(String(150), nullable=False)
+    genero = Column(Enum(GeneroEnum), nullable=False)
+    etnia = Column(Enum(EtniaEnum), nullable=False)
+    escolaridade = Column(Enum(EscolaridadeEnum), nullable=False)
     contato = Column(String(50), nullable=False)
 
-    situacao_trabalho = Column(String(255), nullable=False)
+    situacao_trabalho = Column(Enum(SituacaoTrabalhoEnum), nullable=False)
 
     rede_social = Column(String(255), nullable=True)
 
     cidade = Column(String(255), nullable=False)
 
-    deseja_participar_presencial = Column(String(50), nullable=False)  # sim / não / talvez
-    como_soube_programa = Column(String(100), nullable=False)  # instagram, linkedin, etc
+    deseja_participar_presencial = Column(Enum(PresencialEnum), nullable=False)
+    como_soube_programa = Column(Enum(FonteProgramaEnum), nullable=False)
 
     autorizacao_lgpd = Column(Text, nullable=False)  # sim ou justificativa
 
-class TipoPublicacao(str, enum.Enum):
-    blog = "blog"
-    noticia = "noticia"
 
 class Publicacao(Base):
     __tablename__ = "publicacoes"

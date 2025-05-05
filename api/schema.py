@@ -1,21 +1,30 @@
-from pydantic import BaseModel, EmailStr, AnyUrl, HttpUrl
 from datetime import date, datetime
+from pydantic import BaseModel, EmailStr, AnyUrl, HttpUrl
 from typing import Optional
-from enum import Enum
+
+from enums import (
+    GeneroEnum,
+    EtniaEnum,
+    EscolaridadeEnum,
+    SituacaoMercadoEnum,
+    PresencialEnum,
+    FonteProgramaEnum,
+    TipoPublicacao,
+)
 
 class ParticipanteBase(BaseModel):
     nome: str
     email: EmailStr
     data_nascimento: date
-    genero: str
-    etnia: str
-    escolaridade: str
+    genero: GeneroEnum
+    etnia: EtniaEnum
+    escolaridade: EscolaridadeEnum
     contato: str
-    situacao_trabalho: str
+    situacao_trabalho: SituacaoTrabalhoEnum
     rede_social: Optional[AnyUrl] = None
     cidade: str
-    deseja_participar_presencial: str
-    como_soube_programa: str
+    deseja_participar_presencial: PresencialEnum
+    como_soube_programa: FonteProgramaEnum
     autorizacao_lgpd: str
 
 class ParticipanteCreate(ParticipanteBase):
@@ -26,10 +35,6 @@ class ParticipanteResponse(ParticipanteBase):
 
     class Config:
         from_attributes = True
-
-class TipoPublicacao(str, Enum):
-    blog = "blog"
-    noticia = "noticia"
 
 class PublicacaoCreate(BaseModel):
     legenda: str
