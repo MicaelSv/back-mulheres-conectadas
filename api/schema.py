@@ -6,7 +6,6 @@ from api.enums import (
     GeneroEnum,
     EtniaEnum,
     EscolaridadeEnum,
-    SituacaoMercadoEnum,
     SituacaoTrabalhoEnum,
     PresencialEnum,
     FonteProgramaEnum,
