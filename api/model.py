@@ -2,11 +2,12 @@ from sqlalchemy import Column, Integer, String, Date, Text, DateTime, Enum
 from api.database import Base
 from datetime import datetime
 
-from enums import (
+from api.enums import (
     GeneroEnum,
     EtniaEnum,
     EscolaridadeEnum,
     SituacaoMercadoEnum,
+    SituacaoTrabalhoEnum,
     PresencialEnum,
     FonteProgramaEnum,
     TipoPublicacao,
