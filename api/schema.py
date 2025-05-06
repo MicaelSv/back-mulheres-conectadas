@@ -2,7 +2,7 @@ from datetime import date, datetime
 from pydantic import BaseModel, EmailStr, AnyUrl, HttpUrl
 from typing import Optional
 
-from enums import (
+from api.enums import (
     GeneroEnum,
     EtniaEnum,
     EscolaridadeEnum,
