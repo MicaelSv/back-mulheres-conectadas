@@ -7,6 +7,7 @@ from enums import (
     EtniaEnum,
     EscolaridadeEnum,
     SituacaoMercadoEnum,
+    SituacaoTrabalhoEnum,
     PresencialEnum,
     FonteProgramaEnum,
     TipoPublicacao,
