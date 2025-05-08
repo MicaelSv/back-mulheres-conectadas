@@ -1,5 +1,5 @@
 from datetime import date, datetime
-from pydantic import BaseModel, EmailStr, AnyUrl, HttpUrl
+from pydantic import BaseModel, EmailStr, AnyUrl, HttpUrl, field_validator 
 from typing import Optional
 
 from api.enums import (

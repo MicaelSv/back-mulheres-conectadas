@@ -7,5 +7,5 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-app.include_router(participantes.router, prefix="/participantes", tags=["Participantes"])
+app.include_router(participante.router, prefix="/participantes", tags=["Participantes"])
 app.include_router(publicacao.router, prefix="/publicacoes", tags=["Publicações"])
