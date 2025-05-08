@@ -21,7 +21,7 @@ class ParticipanteBase(BaseModel):
     escolaridade: EscolaridadeEnum
     contato: str
     situacao_trabalho: SituacaoTrabalhoEnum
-    rede_social: Optional[AnyUrl] = None
+    rede_social: str
     cidade: str
     deseja_participar_presencial: PresencialEnum
     como_soube_programa: FonteProgramaEnum
