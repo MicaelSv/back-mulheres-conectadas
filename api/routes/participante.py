@@ -43,30 +43,27 @@ def criar_participante(participante: schema.ParticipanteCreate, db: Session = De
         db.refresh(db_participante)
 
         subject = "Validação de Inscrição"
-        body = f"""Olá {db_participante.nome},
+        body = f"""Olá {db_participante.nome}, 
 
         Sua inscrição foi realizada com sucesso! Para confirmar sua inscrição, clique no link abaixo:
 
         http://site.com/validar/{db_participante.id}
 
-        Atenciosamente,
+        Atenciosamente, 
         Equipe Mulheres Conectadas
         """
         send_email(db_participante.email, subject, body)
-    except IntegrityError:
+    except IntegrityError as e:
         db.rollback()
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Erro ao salvar participante."
+            detail=f"Erro ao salvar participante: {str(e)}"
         )
-
-    return JSONResponse(
-        status_code=status.HTTP_201_CREATED,
-        content={
-            "message": "Participante criado com sucesso.",
-            "data": schema.ParticipanteResponse.model_validate(db_participante).model_dump()
-        }
-    )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Erro inesperado: {str(e)}"
+        )
 
 @router.get("/users", response_model=list[schema.ParticipanteResponse], status_code=status.HTTP_200_OK)
 def listar_participantes(db: Session = Depends(get_db)):
