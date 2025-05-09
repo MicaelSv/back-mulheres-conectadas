@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
+from fastapi.encoders import jsonable_encoder
 
 from api import model, schema
 from api.database import get_db
@@ -53,6 +54,15 @@ def criar_participante(participante: schema.ParticipanteCreate, db: Session = De
         Equipe Mulheres Conectadas
         """
         #send_email(db_participante.email, subject, body)
+
+        return JSONResponse(
+            status_code=status.HTTP_201_CREATED,
+            content={
+                "message": "Participante criado com sucesso.",
+                "data": jsonable_encoder(db_participante)
+            }
+        )
+    
     except IntegrityError as e:
         db.rollback()
         raise HTTPException(
