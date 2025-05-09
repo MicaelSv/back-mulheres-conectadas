@@ -3,6 +3,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from fastapi.encoders import jsonable_encoder
+from pydantic import BaseModel, EmailStr
 
 from api import model, schema
 from api.database import get_db
@@ -18,6 +19,9 @@ from api.enums import (
 )
 
 router = APIRouter()
+
+class EmailRequest(BaseModel):
+    email: EmailStr
 
 # Função auxiliar para transformar enums em listas de dicionários
 def enum_to_dict(enum_cls):
@@ -78,3 +82,7 @@ def criar_participante(participante: schema.ParticipanteCreate, db: Session = De
 @router.get("/users", response_model=list[schema.ParticipanteResponse], status_code=status.HTTP_200_OK)
 def listar_participantes(db: Session = Depends(get_db)):
     return db.query(model.Participante).all()
+
+@router.post("/validar_email")
+def validar_email(data: EmailRequest):
+    return {"message": "E-mail válido"}
