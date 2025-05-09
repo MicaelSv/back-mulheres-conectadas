@@ -52,7 +52,7 @@ def criar_participante(participante: schema.ParticipanteCreate, db: Session = De
         Atenciosamente, 
         Equipe Mulheres Conectadas
         """
-        send_email(db_participante.email, subject, body)
+        #send_email(db_participante.email, subject, body)
     except IntegrityError as e:
         db.rollback()
         raise HTTPException(
