@@ -15,7 +15,7 @@ class EtniaEnum(str, Enum):
     preta = "preta"
     parda = "parda"
     amarela = "amarela"
-    indigena = "indígena"
+    indigena = "indigena"
     outro = "outro"
 
 class EscolaridadeEnum(str, Enum):
