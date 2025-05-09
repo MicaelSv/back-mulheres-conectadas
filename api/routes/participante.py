@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
@@ -84,5 +84,11 @@ def listar_participantes(db: Session = Depends(get_db)):
     return db.query(model.Participante).all()
 
 @router.post("/validar_email")
-def validar_email(data: EmailRequest):
-    return {"message": "E-mail válido"}
+async def validar_email(request: Request):
+    body = await request.json()
+
+    try:
+        EmailRequest(**body)
+        return {"valid": True}
+    except ValidationError:
+        return {"valid": False}
