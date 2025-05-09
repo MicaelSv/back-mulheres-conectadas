@@ -7,6 +7,7 @@ from pydantic import BaseModel, EmailStr, ValidationError
 
 from api import model, schema
 from api.database import get_db
+from api.model import Participante
 from api.email_utils import send_email
 from api.enums import (
     GeneroEnum,
@@ -84,11 +85,16 @@ def listar_participantes(db: Session = Depends(get_db)):
     return db.query(model.Participante).all()
 
 @router.post("/validar_email")
-async def validar_email(request: Request):
+async def validar_email(request: Request, db: Session = Depends(get_db)):
     body = await request.json()
 
     try:
-        EmailRequest(**body)
-        return {"valid": True}
+        data = EmailRequest(**body)
     except ValidationError:
-        return {"valid": False}
+        return {"valid": False, "message": "Formato de e-mail inválido"}
+
+    email_existe = db.query(Participante).filter_by(email=data.email).first()
+    if email_existe:
+        return {"valid": False, "message": "E-mail já cadastrado"}
+
+    return {"valid": True}
