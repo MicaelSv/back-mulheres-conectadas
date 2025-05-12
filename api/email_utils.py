@@ -8,8 +8,10 @@ def send_email(to_email: str, subject: str, body: str):
     try:
         smtp_server = "smtp.gmail.com"
         smtp_port = 587
-        from_email = "emailMulheresConectadas@gmail.com"
-        from_password = "senha"
+        #from_email = "contatomulheresconnectadas@gmail.com"
+        #from_password = "pwcontato"
+        from_email = "contato01mulheresconnectadas@gmail.com"
+        from_password = "vrhm dubd xxgs nuld"
 
         msg = MIMEMultipart()
         msg["From"] = formataddr(("Equipe Mulheres Conectadas", from_email))

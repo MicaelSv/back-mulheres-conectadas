@@ -36,6 +36,8 @@ class Participante(Base):
 
     autorizacao_lgpd = Column(Text, nullable=False)  # sim ou justificativa
 
+    
+
 
 class Publicacao(Base):
     __tablename__ = "publicacoes"

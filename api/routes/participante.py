@@ -48,17 +48,19 @@ def criar_participante(participante: schema.ParticipanteCreate, db: Session = De
         db.commit()
         db.refresh(db_participante)
 
-        subject = "Validação de Inscrição"
-        body = f"""Olá {db_participante.nome}, 
+        subject = "Inscrição realizada com sucesso"
+        body = f"""Olá {db_participante.nome},
 
-        Sua inscrição foi realizada com sucesso! Para confirmar sua inscrição, clique no link abaixo:
+        Sua inscrição no programa Mulheres Conectadas foi realizada com sucesso!
 
-        http://site.com/validar/{db_participante.id}
+        Em breve, entraremos em contato com mais informações.
 
-        Atenciosamente, 
+        Caso tenha dúvidas, você pode responder este e-mail.
+
+        Atenciosamente,  
         Equipe Mulheres Conectadas
         """
-        #send_email(db_participante.email, subject, body)
+        send_email(db_participante.email, subject, body)
 
         return JSONResponse(
             status_code=status.HTTP_201_CREATED,
