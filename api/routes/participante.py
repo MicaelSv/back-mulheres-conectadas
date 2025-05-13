@@ -49,18 +49,19 @@ def criar_participante(participante: schema.ParticipanteCreate, db: Session = De
         db.refresh(db_participante)
 
         subject = "Inscrição realizada com sucesso"
-        body = f"""Olá {db_participante.nome},
+        body = f"""
+        <html>
+        <body>
+            <p>Olá {db_participante.nome},</p>
 
-        Sua inscrição no programa Mulheres Conectadas foi realizada com sucesso!
+            <p>Caso tenha dúvidas, você pode responder este e-mail.</p>
 
-        Em breve, entraremos em contato com mais informações.
-
-        Caso tenha dúvidas, você pode responder este e-mail.
-
-        Atenciosamente,  
-        Equipe Mulheres Conectadas
+            <p>Atenciosamente,<br>
+            Equipe Mulheres Conectadas</p>
+        </body>
+        </html>
         """
-        send_email(db_participante.email, subject, body)
+        send_email(db_participante.email, subject, db_participante.nome)
 
         return JSONResponse(
             status_code=status.HTTP_201_CREATED,
