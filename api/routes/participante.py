@@ -22,8 +22,8 @@ from api.enums import (
 router = APIRouter()
 
 ADMIN_USERS = {
-    "gesyca@example.com": {"senha": "senhaGesyca123", "nome": "Gesyca"},
-    "alessandra@example.com": {"senha": "senhaAlessandra456", "nome": "Alessandra"},
+    "gesyca@admin.com": {"senha": "senhaGesyca123", "nome": "Gesyca"},
+    "alessandra@admin.com": {"senha": "senhaAlessandra123", "nome": "Alessandra"},
 }
 
 class AdminLoginRequest(BaseModel):
