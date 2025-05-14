@@ -21,6 +21,15 @@ from api.enums import (
 
 router = APIRouter()
 
+ADMIN_USERS = {
+    "gesyca@example.com": {"senha": "senhaGesyca123", "nome": "Gesyca"},
+    "alessandra@example.com": {"senha": "senhaAlessandra456", "nome": "Alessandra"},
+}
+
+class AdminLoginRequest(BaseModel):
+    email: EmailStr
+    senha: str
+
 class EmailRequest(BaseModel):
     email: EmailStr
 
@@ -101,3 +110,15 @@ async def validar_email(request: Request, db: Session = Depends(get_db)):
         return {"valid": False, "message": "E-mail já cadastrado"}
 
     return {"valid": True}
+
+
+@router.post("/admin/login")
+def login_admin(admin: AdminLoginRequest):
+    user = ADMIN_USERS.get(admin.email)
+    if user and admin.senha == user["senha"]:
+        return {"nome": user["nome"]}
+    
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Credenciais inválidas"
+    )
