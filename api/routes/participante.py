@@ -147,41 +147,88 @@ def get_dashboard_stats(db: Session = Depends(get_db)):
         .all()
     )
 
+    # Dicionários para normalização
+    escolaridade_map = {
+        "fundamental completo": "Fundamental Completo",
+        "fundamental incompleto": "Fundamental Incompleto",
+        "medio completo": "Médio Completo",
+        "medio incompleto": "Médio Incompleto",
+        "superior completo": "Superior Completo",
+        "superior incompleto": "Superior Incompleto",
+        "outro": "Outro"
+    }
 
-    # Organizando os dados em dicionários/arrays para facilitar o uso no front
+    situacao_trabalho_map = {
+        "empregado": "Empregado",
+        "desempregado": "Desempregado",
+        "estudante": "Estudante",
+        "autonomo": "Autônomo",
+        "outro": "Outro"
+    }
+
     return {
         "por_cidade": {
             "labels": [c for c, _ in por_cidade],
             "data": [t for _, t in por_cidade]
         },
         "por_escolaridade": {
-            "labels": [e for e, _ in por_escolaridade],
+            "labels": [
+                escolaridade_map.get(e.lower(), e) for e, _ in por_escolaridade
+            ],
             "data": [t for _, t in por_escolaridade]
         },
         "por_situacao_trabalho": {
-            "labels": [s for s, _ in por_situacao_trabalho],
+            "labels": [
+                situacao_trabalho_map.get(s.lower(), s) for s, _ in por_situacao_trabalho
+            ],
             "data": [t for _, t in por_situacao_trabalho]
         }
-    }   
+    }
+ 
 
 
-@router.get("/escolaridade_por_etnia") # Group bar chart
+@router.get("/escolaridade_por_etnia")  # Group bar chart
 def escolaridade_por_etnia(db: Session = Depends(get_db)):
     resultados = (
         db.query(model.Participante.etnia, model.Participante.escolaridade, func.count())
         .group_by(model.Participante.etnia, model.Participante.escolaridade)
         .all()
     )
-    
-    # Preparar listas únicas
-    etnias = sorted(list({r[0] for r in resultados}))
-    escolaridades = sorted(list({r[1] for r in resultados}))
+
+    # Normalizações para exibição
+    etnia_map = {
+        "branca": "Branca",
+        "parda": "Parda",
+        "preta": "Preta",
+        "indigena": "Indígena",
+        "amarela": "Amarela",
+        "outra": "Outra"
+    }
+
+    escolaridade_map = {
+        "fundamental completo": "Fundamental Completo",
+        "fundamental incompleto": "Fundamental Incompleto",
+        "medio completo": "Médio Completo",
+        "medio incompleto": "Médio Incompleto",
+        "superior completo": "Superior Completo",
+        "superior incompleto": "Superior Incompleto",
+        "outro": "Outro"
+    }
+
+    # Preparar listas únicas com normalização
+    etnias_raw = {r[0] for r in resultados}
+    escolaridades_raw = {r[1] for r in resultados}
+
+    etnias = sorted([etnia_map.get(e.lower(), e) for e in etnias_raw])
+    escolaridades = sorted([escolaridade_map.get(es.lower(), es) for es in escolaridades_raw])
 
     # Inicializar estrutura de dados
     data_map = {e: {es: 0 for es in escolaridades} for e in etnias}
 
-    # Preencher contagens
-    for etnia, escolaridade, count in resultados:
+    # Preencher contagens com normalização
+    for etnia_raw, escolaridade_raw, count in resultados:
+        etnia = etnia_map.get(etnia_raw.lower(), etnia_raw)
+        escolaridade = escolaridade_map.get(escolaridade_raw.lower(), escolaridade_raw)
         data_map[etnia][escolaridade] = count
 
     # Formatar em datasets
@@ -198,9 +245,10 @@ def escolaridade_por_etnia(db: Session = Depends(get_db)):
     }
 
 
+
 from api.enums import PresencialEnum
 
-@router.get("/presencial_top_cidades") # Stacked Bar Chart
+@router.get("/presencial_top_cidades") 
 def presencial_top_cidades(db: Session = Depends(get_db)):
     # 1. Top 3 cidades com mais inscritos
     subquery = (
@@ -227,29 +275,43 @@ def presencial_top_cidades(db: Session = Depends(get_db)):
     )
 
     cidades = sorted(list({r[0] for r in resultados}))
-    opcoes_presencial = [e.value for e in PresencialEnum]  # ['Sim', 'Não', 'Talvez']
+
+    # Labels padronizadas
+    opcoes_labels = ['Sim', 'Não', 'Talvez']
+
+    # Mapeia os valores do banco para labels padronizadas
+    normalizacao = {
+        'sim': 'Sim',
+        'nao': 'Não',
+        'não': 'Não',  # extra, por garantia
+        'talvez': 'Talvez'
+    }
 
     # Inicializa estrutura
     data_map = {
-        cidade: {opcao: 0 for opcao in opcoes_presencial}
+        cidade: {label: 0 for label in opcoes_labels}
         for cidade in cidades
     }
 
     for cidade, deseja_presencial, count in resultados:
-        data_map[cidade][deseja_presencial] = count
+        resposta_normalizada = normalizacao.get(deseja_presencial.lower(), deseja_presencial)
+        if resposta_normalizada in opcoes_labels:
+            data_map[cidade][resposta_normalizada] = count
 
     # Gera datasets para o gráfico
     datasets = []
-    for opcao in opcoes_presencial:
+    for label in opcoes_labels:
         datasets.append({
-            "label": opcao,
-            "data": [data_map[cidade][opcao] for cidade in cidades]
+            "label": label,
+            "data": [data_map[cidade][label] for cidade in cidades]
         })
 
     return {
         "labels": cidades,
         "datasets": datasets
     }
+
+
 
 
 
