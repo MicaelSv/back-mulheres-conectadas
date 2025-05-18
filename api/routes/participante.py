@@ -20,6 +20,10 @@ from api.enums import (
     TipoPublicacao,
 )
 
+from fastapi.responses import StreamingResponse
+import csv
+import io
+
 router = APIRouter()
 
 ADMIN_USERS = {
@@ -311,6 +315,34 @@ def presencial_top_cidades(db: Session = Depends(get_db)):
         "datasets": datasets
     }
 
+@router.get("/exportar_inscricoes")
+def exportar_inscricoes(db: Session = Depends(get_db)):
+    # Buscar todos os participantes
+    participantes = db.query(model.Participante).all()
+
+    # Nome das colunas baseado nos atributos do modelo
+    colunas = [column.name for column in model.Participante.__table__.columns]
+
+    # Criar buffer para armazenar o CSV
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    # Escrever cabeçalho
+    writer.writerow(colunas)
+
+    # Escrever linhas com os dados
+    for p in participantes:
+        linha = [getattr(p, col) for col in colunas]
+        writer.writerow(linha)
+
+    output.seek(0)  # Volta ao início do arquivo para leitura
+
+    # Envia o CSV como streaming para o frontend baixar
+    return StreamingResponse(
+        output,
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=inscricoes.csv"}
+    )
 
 
 
