@@ -345,5 +345,3 @@ def exportar_inscricoes(db: Session = Depends(get_db)):
     )
 
 
-
-
