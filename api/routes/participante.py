@@ -7,6 +7,8 @@ from pydantic import BaseModel, EmailStr, ValidationError
 from sqlalchemy import func
 from io import StringIO
 import pandas as pd
+import codecs
+from sqlalchemy import select
 
 from api import model, schema
 from api.database import get_db
@@ -33,16 +35,22 @@ ADMIN_USERS = {
     "alessandra@admin.com": {"senha": "senhaAlessandra123", "nome": "Alessandra"},
 }
 
-def to_csv_response(queryset, columns, filename: str):
-    df = pd.DataFrame(queryset, columns=columns)
+def to_csv_response(data, columns, filename):
+    import pandas as pd
+
+    df = pd.DataFrame(data, columns=columns)
     stream = StringIO()
     df.to_csv(stream, index=False)
     stream.seek(0)
+
+    # Adiciona BOM para suportar acentos no Excel
+    bom = codecs.BOM_UTF8.decode('utf-8')
+    csv_content = bom + stream.read()
+    stream = StringIO(csv_content)
+
     return StreamingResponse(stream, media_type="text/csv", headers={
         "Content-Disposition": f"attachment; filename={filename}"
     })
-
-
 
 class AdminLoginRequest(BaseModel):
     email: EmailStr
@@ -336,7 +344,7 @@ def exportar_inscricoes(db: Session = Depends(get_db)):
     # Nome das colunas baseado nos atributos do modelo
     colunas = [column.name for column in model.Participante.__table__.columns]
 
-    # Criar buffer para armazenar o CSV
+    # Criar buffer e writer com BOM
     output = io.StringIO()
     writer = csv.writer(output)
 
@@ -348,11 +356,16 @@ def exportar_inscricoes(db: Session = Depends(get_db)):
         linha = [getattr(p, col) for col in colunas]
         writer.writerow(linha)
 
-    output.seek(0)  # Volta ao início do arquivo para leitura
+    # Adicionar BOM manualmente
+    output.seek(0)
+    bom = codecs.BOM_UTF8.decode("utf-8")
+    csv_com_bom = bom + output.read()
 
-    # Envia o CSV como streaming para o frontend baixar
+    # Novo stream com conteúdo final
+    final_stream = io.StringIO(csv_com_bom)
+
     return StreamingResponse(
-        output,
+        final_stream,
         media_type="text/csv",
         headers={"Content-Disposition": "attachment; filename=inscricoes.csv"}
     )
@@ -459,38 +472,32 @@ def csv_escolaridade_por_etnia(db: Session = Depends(get_db)):
         rows.append(row)
 
     df = pd.DataFrame(rows)
-    stream = StringIO()
-    df.to_csv(stream, index=False)
-    stream.seek(0)
-
-    return StreamingResponse(stream, media_type="text/csv", headers={
-        "Content-Disposition": "attachment; filename=escolaridade_por_etnia.csv"
-    })
+    return to_csv_response(df.values.tolist(), df.columns.tolist(), "escolaridade_por_etnia.csv")
 
 @router.get("/presencial_top_cidades/csv")
 def csv_presencial_top_cidades(db: Session = Depends(get_db)):
     # Top 3 cidades com mais inscritos
     subquery = (
-        db.query(model.Participante.cidade)
-        .group_by(model.Participante.cidade)
-        .order_by(func.count().desc())
-        .limit(3)
-        .subquery()
+    db.query(model.Participante.cidade)
+    .group_by(model.Participante.cidade)
+    .order_by(func.count().desc())
+    .limit(3)
+    .subquery()
     )
 
     resultados = (
-        db.query(
-            model.Participante.cidade,
-            model.Participante.deseja_participar_presencial,
-            func.count()
-        )
-        .filter(model.Participante.cidade.in_(subquery))
-        .group_by(
-            model.Participante.cidade,
-            model.Participante.deseja_participar_presencial
-        )
-        .all()
+    db.query(
+        model.Participante.cidade,
+        model.Participante.deseja_participar_presencial,
+        func.count()
     )
+    .filter(model.Participante.cidade.in_(select(subquery.c.cidade)))  # <- CORRIGIDO
+    .group_by(
+        model.Participante.cidade,
+        model.Participante.deseja_participar_presencial
+    )
+    .all()
+)
 
     cidades = sorted(list({r[0] for r in resultados}))
 
@@ -521,10 +528,5 @@ def csv_presencial_top_cidades(db: Session = Depends(get_db)):
         rows.append(row)
 
     df = pd.DataFrame(rows)
-    stream = StringIO()
-    df.to_csv(stream, index=False)
-    stream.seek(0)
+    return to_csv_response(df.values.tolist(), df.columns.tolist(), "presencial_top_cidades.csv")
 
-    return StreamingResponse(stream, media_type="text/csv", headers={
-        "Content-Disposition": "attachment; filename=presencial_top_cidades.csv"
-    })
